@@ -194,7 +194,7 @@ export const useStore = defineStore("store", {
     async playAlarmSound() {
       const alarmFileRef = ref(
         storage,
-        'gs://timer-72ded.appspot.com/alarm.mp3'
+        'gs://timer-72ded.appspot.com/alarm.wav'
       )
       const url = await getDownloadURL(alarmFileRef)
       const alarm = new Audio(url)
