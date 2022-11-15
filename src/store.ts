@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
-import { initializeApp } from 'firebase/app'
+import { initializeApp } from "firebase/app";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { useTitle } from '@vueuse/core'
+import { useTitle } from "@vueuse/core";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCtNk_xsbfuNR1f-sUpoR2VPIOvJjI-784",
@@ -9,12 +9,12 @@ const firebaseConfig = {
   projectId: "timer-72ded",
   storageBucket: "timer-72ded.appspot.com",
   messagingSenderId: "818376260741",
-  appId: "1:818376260741:web:b3775b030f4a2e1a1ffdec"
+  appId: "1:818376260741:web:b3775b030f4a2e1a1ffdec",
 };
 
-const app = initializeApp(firebaseConfig)
-const storage = getStorage(app)
-const title = useTitle()
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+const title = useTitle();
 
 let storageValue = localStorage.getItem("pomodoroMinutes");
 const pomodoroMinutes = storageValue !== null ? parseInt(storageValue) : 25;
@@ -22,8 +22,14 @@ storageValue = localStorage.getItem("shortBreakMinutes");
 const shortBreakMinutes = storageValue !== null ? parseInt(storageValue) : 5;
 storageValue = localStorage.getItem("longBreakMinutes");
 const longBreakMinutes = storageValue !== null ? parseInt(storageValue) : 15;
+storageValue = localStorage.getItem("alarmVolume");
+const alarmVolume = storageValue !== null ? storageValue : "medium";
 storageValue = localStorage.getItem("alarmSoundOn");
 const alarmSoundOn = storageValue !== null ? storageValue == "true" : true;
+
+const alarmFileRef = ref(storage, "gs://timer-72ded.appspot.com/alarm.wav");
+const alarmSoundUrl = await getDownloadURL(alarmFileRef);
+const alarm = new Audio(alarmSoundUrl);
 
 export const useStore = defineStore("store", {
   state: () => {
@@ -38,6 +44,7 @@ export const useStore = defineStore("store", {
       shortBreakMinutes: shortBreakMinutes,
       longBreakMinutes: longBreakMinutes,
       alarmSoundOn: alarmSoundOn,
+      alarmVolume: alarmVolume,
       secondDuration: 1000,
       title: "www-timer",
       overlayOn: false,
@@ -55,6 +62,9 @@ export const useStore = defineStore("store", {
     },
     setLongBreakMinutes(minutes: number) {
       this.longBreakMinutes = minutes;
+    },
+    setAlarmVolume(alarmVolume: string) {
+      this.alarmVolume = alarmVolume;
     },
     setAlarmSoundOn(alarmSoundOn: boolean) {
       this.alarmSoundOn = alarmSoundOn;
@@ -114,7 +124,6 @@ export const useStore = defineStore("store", {
         if (this.currentTimer.getTime() === 0 || this.timerGoing === false) {
           clearInterval(incrementSecond);
           if (this.timerGoing) {
-            // playAlarmSound()
             this.determineNextBlock();
           }
         }
@@ -125,9 +134,9 @@ export const useStore = defineStore("store", {
     },
     toggleTimer() {
       if (!this.timerGoing) {
-        this.startTimer()
+        this.startTimer();
       } else {
-        this.stopTimer()
+        this.stopTimer();
       }
     },
     resetTimer() {
@@ -149,11 +158,13 @@ export const useStore = defineStore("store", {
       pomodoroMinutes: number,
       shortBreakMinutes: number,
       longBreakMinutes: number,
+      alarmVolume: string,
       alarmSoundOn: boolean
     ) {
       this.pomodoroMinutes = pomodoroMinutes;
       this.shortBreakMinutes = shortBreakMinutes;
       this.longBreakMinutes = longBreakMinutes;
+      this.alarmVolume = alarmVolume;
       this.alarmSoundOn = alarmSoundOn;
       this.persistSettings();
       this.setTimer(this.pomodoroMinutes);
@@ -171,6 +182,8 @@ export const useStore = defineStore("store", {
       this.setLongBreakMinutes(
         storageValue !== null ? parseInt(storageValue) : 15
       );
+      storageValue = localStorage.getItem("alarmVolume");
+      this.setAlarmVolume(storageValue !== null ? storageValue : "medium");
       storageValue = localStorage.getItem("alarmSoundOn");
       this.setAlarmSoundOn(
         storageValue !== null ? storageValue == "true" : true
@@ -189,16 +202,18 @@ export const useStore = defineStore("store", {
         "longBreakMinutes",
         this.longBreakMinutes.toString()
       );
+      localStorage.setItem("alarmVolume", this.alarmVolume);
       localStorage.setItem("alarmSoundOn", this.alarmSoundOn.toString());
     },
     async playAlarmSound() {
-      const alarmFileRef = ref(
-        storage,
-        'gs://timer-72ded.appspot.com/alarm.wav'
-      )
-      const url = await getDownloadURL(alarmFileRef)
-      const alarm = new Audio(url)
-      alarm.play()
+      if ((this.alarmVolume === "low")) {
+        alarm.volume = 0.2;
+      } else if ((this.alarmVolume === "medium")) {
+        alarm.volume = 0.5;
+      } else {
+        alarm.volume = 1;
+      }
+      alarm.play();
     },
   },
 });

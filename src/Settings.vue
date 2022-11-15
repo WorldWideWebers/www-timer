@@ -13,10 +13,18 @@
             <input v-model="longBreakMinutes" type="number" required />
         </span>
         <span>
+            <label>Alarm volume</label>
+            <select v-model="alarmVolume">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+        </span>
+        <span>
             <label>Alarm sound</label>
             <input type="checkbox" v-model="store.alarmSoundOn" />
         </span>
-        <span id="save-settings" >
+        <span id="save-settings">
             <button @click="saveSettings()">Save settings</button>
         </span>
         <button class="circle-button" id="close-button" @click="closeOverlay()">
@@ -33,6 +41,7 @@ const store = useStore()
 const pomodoroMinutes = ref(store.pomodoroMinutes)
 const shortBreakMinutes = ref(store.shortBreakMinutes)
 const longBreakMinutes = ref(store.longBreakMinutes)
+const alarmVolume = ref(store.alarmVolume);
 const alertText = "Minutes cannot exceed 59";
 
 const saveSettings = () => {
@@ -46,7 +55,7 @@ const saveSettings = () => {
         longBreakMinutes.value = store.longBreakMinutes
         alert(alertText)
     } else {
-        store.saveSettings(pomodoroMinutes.value, shortBreakMinutes.value, longBreakMinutes.value, store.alarmSoundOn)
+        store.saveSettings(pomodoroMinutes.value, shortBreakMinutes.value, longBreakMinutes.value, alarmVolume.value, store.alarmSoundOn)
         closeOverlay()
     }
 }
@@ -76,12 +85,16 @@ const closeOverlay = () => {
     width: 250px;
 }
 
-input[type=number] {
-    width: 30px;
+input[type=number],
+select {
     border-radius: 0;
     padding: 5px;
-    height: 20px;
     border: none;
+}
+
+input[type=number] {
+    height: 25px;
+    width: 45px;
 }
 
 #save-settings {
