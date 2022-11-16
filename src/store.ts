@@ -27,10 +27,6 @@ const alarmVolume = storageValue !== null ? storageValue : "medium";
 storageValue = localStorage.getItem("alarmSoundOn");
 const alarmSoundOn = storageValue !== null ? storageValue == "true" : true;
 
-const alarmFileRef = ref(storage, "gs://timer-72ded.appspot.com/alarm.wav");
-const alarmSoundUrl = await getDownloadURL(alarmFileRef);
-const alarm = new Audio(alarmSoundUrl);
-
 export const useStore = defineStore("store", {
   state: () => {
     return {
@@ -38,7 +34,7 @@ export const useStore = defineStore("store", {
       currentTimerString: "",
       timerGoing: false,
       tomatoCounter: 0,
-      onBreak: false,
+      onBreak: '',
       currentInterval: 0,
       pomodoroMinutes: pomodoroMinutes,
       shortBreakMinutes: shortBreakMinutes,
@@ -75,7 +71,7 @@ export const useStore = defineStore("store", {
     startFresh() {
       this.timerGoing = false;
       this.tomatoCounter = 0;
-      this.onBreak = false;
+      this.onBreak = '';
       this.setTimer(this.pomodoroMinutes);
     },
     setTimer(numOfMinutes: number) {
@@ -89,21 +85,21 @@ export const useStore = defineStore("store", {
         this.playAlarmSound();
       }
       if (this.tomatoCounter < 3) {
-        if (this.onBreak) {
-          this.onBreak = false;
+        if (this.onBreak !== '') {
+          this.onBreak = '';
           this.setTimer(this.pomodoroMinutes);
         } else {
           this.tomatoCounter++;
-          this.onBreak = true;
+          this.onBreak = 'short';
           this.setTimer(this.shortBreakMinutes);
         }
       } else if (this.tomatoCounter === 3) {
-        if (this.onBreak) {
-          this.onBreak = false;
+        if (this.onBreak !== '') {
+          this.onBreak = '';
           this.setTimer(this.pomodoroMinutes);
         } else {
           this.tomatoCounter++;
-          this.onBreak = false;
+          this.onBreak = 'long';
           this.setTimer(this.longBreakMinutes);
         }
       } else {
@@ -206,9 +202,16 @@ export const useStore = defineStore("store", {
       localStorage.setItem("alarmSoundOn", this.alarmSoundOn.toString());
     },
     async playAlarmSound() {
-      if ((this.alarmVolume === "low")) {
+      const alarmFileRef = ref(
+        storage,
+        "gs://timer-72ded.appspot.com/alarm.wav"
+      );
+      const alarmSoundUrl = await getDownloadURL(alarmFileRef);
+      const alarm = new Audio(alarmSoundUrl);
+      
+      if (this.alarmVolume === "low") {
         alarm.volume = 0.2;
-      } else if ((this.alarmVolume === "medium")) {
+      } else if (this.alarmVolume === "medium") {
         alarm.volume = 0.5;
       } else {
         alarm.volume = 1;

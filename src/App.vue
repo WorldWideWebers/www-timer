@@ -16,8 +16,8 @@
       </button>
     </div>
     <div id="option-buttons">
-      <button @click="store.shortBreakButton()">Short break</button>
-      <button @click="store.longBreakButton()">Long break</button>
+      <button @click="store.shortBreakButton()" :class="{ 'active-button' : store.onBreak === 'short' }">Short break</button>
+      <button @click="store.longBreakButton()" :class="{ 'active-button' : store.onBreak === 'long' }">Long break</button>
       <button @click="store.clearTomatoes()">Clear tomatoes</button>
     </div>
     <button id="settings-button" class="circle-button" @click="store.toggleOverlay()">
