@@ -146,9 +146,23 @@ export const useStore = defineStore("store", {
     },
     shortBreakButton() {
       this.stopTimer(), this.setTimer(this.shortBreakMinutes);
+      if (this.onBreak !== 'short') {
+        this.onBreak = 'short';
+        this.setTimer(this.shortBreakMinutes)
+      } else {
+        this.onBreak = ''
+        this.setTimer(this.pomodoroMinutes)
+      }
     },
     longBreakButton() {
       this.stopTimer(), this.setTimer(this.longBreakMinutes);
+      if (this.onBreak !== 'long') {
+        this.onBreak = 'long';
+        this.setTimer(this.longBreakMinutes)
+      } else {
+        this.onBreak = ''
+        this.setTimer(this.pomodoroMinutes)
+      }
     },
     saveSettings(
       pomodoroMinutes: number,
